@@ -8,6 +8,7 @@ import org.apache.log4j.Logger;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.text.MessageFormat;
 import java.util.Properties;
 import java.util.stream.Stream;
 
@@ -19,13 +20,14 @@ public class CableKafkaProducer {
     private static final Logger logger = Logger.getLogger(CableKafkaProducer.class);
 
     public static void main(String[] args) {
-        if (args.length != 2) {
-
-            System.out.println("Usage: TruckEventsProducer <broker list> <zookeeper>");
+        if (args.length != 3) {
+            System.out.println("Usage: TruckEventsProducer <broker list> <zookeeper> <dataFilePath>");
             System.exit(-1);
         }
 
-        logger.debug("Using broker list:" + args[0] + ", zk conn:" + args[1]);
+        String filePath = args[2];
+
+        logger.debug(MessageFormat.format("Using broker list: {0}, zk conn: {1}, path to data file: {2}", args[0], args[1], filePath));
 
         Properties props = new Properties();
         props.put("bootstrap.servers", args[0]);
@@ -46,18 +48,17 @@ public class CableKafkaProducer {
 */
 
         final String TOPIC = "SbtStream";
-        String fileName = "cont_cut";
 
 //        File file2 = new File(ClassLoader.getSystemResource("cont_cut").getPath());
 
         try (Producer<String, String> producer = new KafkaProducer(props)) {
-            try (BufferedReader br = new BufferedReader( new InputStreamReader(ClassLoader.getSystemResourceAsStream(fileName)))) {
+            try (BufferedReader br = new BufferedReader( new FileReader(new File(filePath)))) {
                 String line;
                 while ((line = br.readLine()) != null) {
                     processLine(line, producer, TOPIC);
                 }
             } catch (FileNotFoundException e) {
-                logger.error("Can not find file specified: " + fileName, e);
+                logger.error("Can not find file specified: " + filePath, e);
                 // TODO remove after logging enabling
                 e.printStackTrace();
             } catch (IOException e) {
@@ -66,12 +67,6 @@ public class CableKafkaProducer {
                 e.printStackTrace();
             }
         }
-
-/*
-        producer.send(new ProducerRecord<String, String>(TOPIC, "1"));
-        producer.send(new ProducerRecord<String, String>(TOPIC, "hey!"));
-        producer.send(new ProducerRecord<String, String>(TOPIC, "2"));
-*/
 
     }
 
