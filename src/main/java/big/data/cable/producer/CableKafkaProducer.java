@@ -5,7 +5,7 @@ import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.log4j.Logger;
 
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Properties;
@@ -46,13 +46,23 @@ public class CableKafkaProducer {
 */
 
         final String TOPIC = "SbtStream";
+        String fileName = "cont_cut";
+
+//        File file2 = new File(ClassLoader.getSystemResource("cont_cut").getPath());
 
         try (Producer<String, String> producer = new KafkaProducer(props)) {
-            String filePath = ClassLoader.getSystemResource("cont_cut").getPath();
-            try (Stream<String> lines = Files.lines(Paths.get(filePath))) {
-                lines.forEachOrdered(line -> processLine(line, producer, TOPIC));
+            try (BufferedReader br = new BufferedReader( new InputStreamReader(ClassLoader.getSystemResourceAsStream(fileName)))) {
+                String line;
+                while ((line = br.readLine()) != null) {
+                    processLine(line, producer, TOPIC);
+                }
+            } catch (FileNotFoundException e) {
+                logger.error("Can not find file specified: " + fileName, e);
+                // TODO remove after logging enabling
+                e.printStackTrace();
             } catch (IOException e) {
-                logger.error("Error during file parsing", e);
+                logger.error("Error during file reading", e);
+                // TODO remove after logging enabling
                 e.printStackTrace();
             }
         }
