@@ -7,6 +7,7 @@ import org.apache.log4j.Logger;
 
 import java.io.*;
 import java.text.MessageFormat;
+import java.util.Date;
 import java.util.Properties;
 
 /**
@@ -16,9 +17,10 @@ public class CableKafkaProducer {
 
     private static final Logger logger = Logger.getLogger(CableKafkaProducer.class);
 
-    public static void main(String[] args) {
-        if (args.length != 3) {
-            System.out.println("Usage: TruckEventsProducer <broker list> <zookeeper> <dataFilePath>");
+    public static void main(String[] args) throws InterruptedException {
+//        args = new String[]{"192.168.1.31:9092", "192.168.1.31:2181", "D:\\projects\\BigData\\Emulator\\src\\main\\resources\\cont_cut_30000"};
+        if (args.length != 4) {
+            System.out.println("Usage: TruckEventsProducer <broker list> <zookeeper> <dataFilePath> <messagesPerSecond>");
             System.exit(-1);
         }
 
@@ -37,20 +39,32 @@ public class CableKafkaProducer {
         props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
 
-/*
-        props.put("metadata.broker.list", args[0]);
-        props.put("zk.connect", args[1]);
-        props.put("serializer.class", "kafka.serializer.StringEncoder");
-        props.put("request.required.acks", "1");
-*/
-
         final String TOPIC = "SbtStream";
+
+        int messagesPerSecond = Integer.parseInt(args[3]);
+        Date startDate = null;
+        Date curDate;
+        long duration;
+        int numInBatch = 0;
+        int totalPublishedMessagesCount = 0;
 
         try (Producer<String, String> producer = new KafkaProducer(props)) {
             try (BufferedReader br = new BufferedReader( new FileReader(new File(filePath)))) {
                 String line;
                 while ((line = br.readLine()) != null) {
+                    if(numInBatch == 0) startDate = new Date();
                     processLine(line, producer, TOPIC);
+                    if (numInBatch == messagesPerSecond - 1) {
+                        curDate = new Date();
+                        duration = curDate.getTime() - startDate.getTime();
+                        if(duration < 1000){
+                            System.out.println(MessageFormat.format("Start time: {0}, current time: {1}. Going to sleep for {2} milliseconds", startDate.getTime(), curDate.getTime(), 1000 - duration));
+                            Thread.sleep(1000 - duration);
+                        }
+                        numInBatch = -1;
+                    }
+                    numInBatch ++;
+                    totalPublishedMessagesCount++;
                 }
             } catch (FileNotFoundException e) {
                 System.out.println("Can not find file specified: " + filePath + e);
@@ -62,6 +76,8 @@ public class CableKafkaProducer {
                 e.printStackTrace();
             }
         }
+
+        System.out.println("totalPublishedMessagesCount: " + totalPublishedMessagesCount);
 
     }
 
