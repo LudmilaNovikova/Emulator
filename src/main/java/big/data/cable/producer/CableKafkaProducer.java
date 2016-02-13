@@ -47,10 +47,12 @@ public class CableKafkaProducer {
         long duration;
         int numInBatch = 0;
         int totalPublishedMessagesCount = 0;
+        Date emulatorStartDate = new Date();
 
         try (Producer<String, String> producer = new KafkaProducer(props)) {
             try (BufferedReader br = new BufferedReader( new FileReader(new File(filePath)))) {
                 String line;
+                emulatorStartDate = new Date();
                 while ((line = br.readLine()) != null) {
                     if(numInBatch == 0) startDate = new Date();
                     processLine(line, producer, TOPIC);
@@ -58,7 +60,7 @@ public class CableKafkaProducer {
                         curDate = new Date();
                         duration = curDate.getTime() - startDate.getTime();
                         if(duration < 1000){
-                            System.out.println(MessageFormat.format("Start time: {0}, current time: {1}. Going to sleep for {2} milliseconds", startDate.getTime(), curDate.getTime(), 1000 - duration));
+                            System.out.println(MessageFormat.format("Start time: {0,number,#}, current time: {1,number,#}. Going to sleep for {2,number,#} milliseconds", startDate.getTime(), curDate.getTime(), 1000 - duration));
                             Thread.sleep(1000 - duration);
                         }
                         numInBatch = -1;
@@ -78,6 +80,9 @@ public class CableKafkaProducer {
         }
 
         System.out.println("totalPublishedMessagesCount: " + totalPublishedMessagesCount);
+        System.out.println(MessageFormat.format("Emulator started at {0} (timestamp: {1,number,#})", emulatorStartDate, emulatorStartDate.getTime()));
+        Date emulatorEndDate = new Date();
+        System.out.println(MessageFormat.format("Emulator finished at {0} (timestamp: {1,number,#}). Duration {2,number,#} milliseconds", emulatorEndDate, emulatorEndDate.getTime(), emulatorEndDate.getTime() - emulatorStartDate.getTime()));
 
     }
 
