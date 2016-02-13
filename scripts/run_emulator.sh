@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-java -cp /opt/lnovikova/cabelTV/producer/big-data-cable-emulator-1.0.jar big.data.cable.producer.CableKafkaProducer sandbox.hortonworks.com:6667 sandbox.hortonworks.com:2181  /opt/lnovikova/cabelTV/producer/data/cont_cut_10
+java -cp /opt/lnovikova/cabelTV/emulator/big-data-cable-emulator-1.0.jar big.data.cable.producer.CableKafkaProducer 192.168.1.31:9092 192.168.1.31:2181  /home/lnovikova/projects/cableTv/data/cont_cut_10

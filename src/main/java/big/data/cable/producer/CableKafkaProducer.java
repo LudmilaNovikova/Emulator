@@ -6,11 +6,8 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.log4j.Logger;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.text.MessageFormat;
 import java.util.Properties;
-import java.util.stream.Stream;
 
 /**
  * Created by lnovikova on 11.01.2016.
@@ -27,7 +24,7 @@ public class CableKafkaProducer {
 
         String filePath = args[2];
 
-        logger.debug(MessageFormat.format("Using broker list: {0}, zk conn: {1}, path to data file: {2}", args[0], args[1], filePath));
+        System.out.println(MessageFormat.format("Using broker list: {0}, zk conn: {1}, path to data file: {2}", args[0], args[1], filePath));
 
         Properties props = new Properties();
         props.put("bootstrap.servers", args[0]);
@@ -49,8 +46,6 @@ public class CableKafkaProducer {
 
         final String TOPIC = "SbtStream";
 
-//        File file2 = new File(ClassLoader.getSystemResource("cont_cut").getPath());
-
         try (Producer<String, String> producer = new KafkaProducer(props)) {
             try (BufferedReader br = new BufferedReader( new FileReader(new File(filePath)))) {
                 String line;
@@ -58,11 +53,11 @@ public class CableKafkaProducer {
                     processLine(line, producer, TOPIC);
                 }
             } catch (FileNotFoundException e) {
-                logger.error("Can not find file specified: " + filePath, e);
+                System.out.println("Can not find file specified: " + filePath + e);
                 // TODO remove after logging enabling
                 e.printStackTrace();
             } catch (IOException e) {
-                logger.error("Error during file reading", e);
+                System.out.println("Error during file reading:" + e);
                 // TODO remove after logging enabling
                 e.printStackTrace();
             }
