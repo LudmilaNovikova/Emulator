@@ -31,7 +31,7 @@ public class CableKafkaProducer {
         Properties props = new Properties();
         props.put("bootstrap.servers", args[0]);
         props.put("zk.connect", args[1]);
-        props.put("acks", "all");
+        props.put("acks", "0");
         props.put("retries", 0);
         props.put("batch.size", 16384);
         props.put("linger.ms", 1);
