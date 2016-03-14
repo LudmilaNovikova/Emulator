@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-java -cp /opt/lnovikova/cabelTV/emulator/big-data-cable-emulator-1.0.jar big.data.cable.producer.CableKafkaProducer 192.168.1.31:9092 192.168.1.31:2181  /home/lnovikova/projects/cableTv/data/cont_cut_30000 1458
+java -cp /opt/projects/cableTv/big-data-cable-emulator-1.0.jar big.data.cable.producer.CableKafkaProducer 192.168.1.31:9092 192.168.1.31:2181 /home/lnovikova/projects/cableTv/data/cont_full 2000 StbStream | tee /home/lnovikova/projects/cableTv/log/cableTvEmulator.log

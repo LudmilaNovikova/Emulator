@@ -19,18 +19,28 @@ public class CableKafkaProducer {
 
     public static void main(String[] args) throws InterruptedException {
 //        args = new String[]{"192.168.1.31:9092", "192.168.1.31:2181", "D:\\projects\\BigData\\Emulator\\src\\main\\resources\\cont_cut_30000"};
-        if (args.length != 4) {
+        if (args.length != 5) {
             System.out.println("Usage: TruckEventsProducer <broker list> <zookeeper> <dataFilePath> <messagesPerSecond>");
             System.exit(-1);
         }
 
+        String brokers = args[0];
+        String zkConnection = args[1];
         String filePath = args[2];
+        Integer messagesPerSecond = Integer.parseInt(args[3]);
+        String TOPIC = args[4];
 
-        System.out.println(MessageFormat.format("Using broker list: {0}, zk conn: {1}, path to data file: {2}", args[0], args[1], filePath));
+        System.out.println(MessageFormat.format("Using " +
+                "\nbroker list: {0}, " +
+                "\nzk conn: {1}, " +
+                "\npath to data file: {2}, " +
+                "\npublish speed: {3} messages/sec, " +
+                "\nKafka topic name: {4}",
+                brokers, zkConnection, filePath, messagesPerSecond.toString(), TOPIC));
 
         Properties props = new Properties();
-        props.put("bootstrap.servers", args[0]);
-        props.put("zk.connect", args[1]);
+        props.put("bootstrap.servers", brokers);
+        props.put("zk.connect", zkConnection);
         props.put("acks", "0");
         props.put("retries", 0);
         props.put("batch.size", 16384);
@@ -39,9 +49,6 @@ public class CableKafkaProducer {
         props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
         props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
 
-        final String TOPIC = "SbtStream";
-
-        int messagesPerSecond = Integer.parseInt(args[3]);
         Date startDate = null;
         Date curDate;
         long duration;
